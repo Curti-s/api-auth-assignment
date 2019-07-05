@@ -7,17 +7,20 @@ const bodyParser = require("body-parser");
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const passport = require("passport");
+require("./config/passport");
 
 const app = express();
-
-app.use(passport.initialize());
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
+// middleware
+app.use(passport.initialize());
+
 // parse application/json
 app.use(bodyParser.json());
+
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(logger("dev"));

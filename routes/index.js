@@ -9,12 +9,21 @@ router.get("/", function(req, res, next) {
   res.render("index", { title: "Express" });
 });
 
+router.post("/personnel/signup", personnelController.signup);
 router.post(
   "/personnel/login",
-  passport.authenticate("local", { session: false }),
+  passport.authenticate("local", { session: false }, function(
+    error,
+    user,
+    info
+  ) {
+    // this will execute in any case, even if a passport strategy will find an error
+    // log everything to console
+    console.log(error);
+    console.log(user);
+    console.log(info);
+  }),
   personnelController.login
 );
-
-router.post("/personnel/signup", personnelController.signup);
 
 module.exports = router;

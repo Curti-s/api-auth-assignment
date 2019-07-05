@@ -1,7 +1,8 @@
 const passport = require("passport");
 const passportJWT = require("passport-jwt");
 const JWT_SECRET = require("../config");
-const Personnel = require("../models").personnels;
+
+const Personnel = require("../models").personnel;
 
 // ExtractJwt for extracting token
 const ExtractJWT = passportJWT.ExtractJwt;
@@ -45,30 +46,29 @@ passport.use(
   new LocalStrategy(
     {
       usernameField: "phone_number",
-      passwordField: "password"
+      passwordField: "password",
+      passReqToCallback: true
     },
-    async (phone_number, password, done) => {
-      try {
-        // find user specified by phone_number
-        await Personnel.findOne({ where: { personnel_phone: phone_number } })
-          .then(foundPersonnel => {
-            if (!foundPersonnel) {
-              return done(null, false);
-            }
-          })
-          .catch(err => console.log(err));
+    async (req, phone_number, password, done) => {
+      // find user specified by phone_number
+      await Personnel.findAll({
+        limit: 1,
+        where: { personnel_phone: phone_number }
+      })
+        .then(foundPersonnel => {
+          if (!foundPersonnel) {
+            return done(null, false, { msg: "User not found" });
+          }
 
-        // validate password
-        const isMatch = await foundPersonnel.comparePassword(password);
-        if (!isMatch) {
-          return done(error, false);
-        }
+          // validate password
+          if (!foundPersonnel.comparePassword(password)) {
+            return done(error, false, { msg: error });
+          }
 
-        // otherwise, return user with the cb function
-        done(null, foundPersonnel);
-      } catch (error) {
-        done(error, false);
-      }
+          // otherwise, return user with the cb function
+          done(null, foundPersonnel, { msg: "User found" });
+        })
+        .catch(err => console.log(err));
     }
   )
 );

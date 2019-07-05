@@ -1,6 +1,6 @@
 const JWT = require("jsonwebtoken");
 
-const Personnel = require("../models").personnels;
+const Personnel = require("../models").personnel;
 const { JWT_SECRET } = require("../config");
 
 let signToken = person => {
@@ -16,30 +16,21 @@ let signToken = person => {
 };
 module.exports = {
   signup: async (req, res, next) => {
-    // find user specified by phone_number
-    let personnel = await Personnel.findAll({
-      limit: 1,
-      where: { personnel_phone: req.body.phone_number }
-    });
     try {
       // find if personnel is available
       await Personnel.findOne({
         where: { personnel_phone: req.body.phone_number }
-      })
-        .then(personnel => {
-          if (personnel) {
-            return res.status(403).json({ error: { number: "Number in use" } });
-          }
-        })
-        .catch(err => {
-          console.log(err);
-        });
+      }).then(personnel => {
+        if (personnel) {
+          return res.status(403).json({ error: { number: "Number in use" } });
+        }
+      });
 
       // create new Personnel
       await Personnel.create({
         personnel_phone: req.body.phone_number,
-        personnel_password: req.body.password,
         personnel_fname: req.body.name,
+        personnel_password: req.body.password,
         personnel_email: req.body.email
       })
         .then(newPersonnel => {
@@ -57,8 +48,12 @@ module.exports = {
     }
   },
   login: async (req, res) => {
-    // generate token
-    let token = signToken(req.user);
-    res.status(200).json({ token });
+    try {
+      const personnel = req.body;
+      // generate token
+      return await res.status(200).json({ personnel, accessToken: token });
+    } catch (error) {
+      console.log(error);
+    }
   }
 };

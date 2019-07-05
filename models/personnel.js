@@ -53,32 +53,24 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     {
-      tablename: "personnel",
+      tableName: "personnel",
       timestamps: false,
 
-      hooks: {
-        beforeCreate: function(personnel, options) {
-          try {
-            bcrypt.genSalt(10, (err, salt) => {
-              if (err) return err;
-              bcrypt.hash(
-                personnel.personnel_password,
-                salt,
-                null,
-                (err, hash) => {
-                  if (err) return err;
-                  personnel.personnel_password = hash;
-                  return options;
-                }
-              );
-            });
-          } catch (error) {
-            console.log(error);
-          }
-        }
-      }
+      hooks: {}
     }
   );
+
+  Personnel.beforeCreate(async function(personnel, done) {
+    await bcrypt.genSalt(10, (err, salt) => {
+      if (err) return err;
+      bcrypt.hash(personnel.personnel_password, salt, null, (err, hash) => {
+        if (err) return err;
+        personnel.personnel_password = hash;
+        console.log(personnel.personnel_password);
+        return done;
+      });
+    });
+  });
 
   Personnel.prototype.comparePassword = async function(candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.personnel_password);
