@@ -53,18 +53,21 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     {
-      tableName: "personnel",
+      tablename: "personnel",
       timestamps: false
     }
   );
-  Personnel.beforeSave((personnel, options) => {
-    if (personnel.changed("personnel_password")) {
-      personnel.personnel_password = bcrypt.hashSync(
-        personnel.personnel_password,
-        bcrypt.genSaltSync(10),
-        null
-      );
-    }
+
+  Personnel.beforeCreate(async (personnel, options) => {
+    return (personnel.personnel_password = await bcrypt.hash(
+      personnel.personnel_password,
+      bcrypt.genSalt(10)
+    ));
   });
+
+  Personnel.prototype.comparePassword = async candidatePassword => {
+    return await bcrypt.compare(candidatePassword, this.personnel_password);
+  };
+
   return Personnel;
 };

@@ -6,8 +6,11 @@ const logger = require("morgan");
 const bodyParser = require("body-parser");
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
+const passport = require("passport");
 
 const app = express();
+
+app.use(passport.initialize());
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -22,6 +25,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+
+// initialize passport
+app.use(passport.initialize());
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);

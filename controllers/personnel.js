@@ -15,43 +15,31 @@ let signToken = person => {
   );
 };
 module.exports = {
-  signup(req, res) {
-    let { phone_number } = req.body;
-
-    if (!req.body.phone_number || !req.body.password) {
-      return res.status(400).send({ error: "Missing username or password" });
-    } else {
-      Personnel.create({
-        personnel_phone: req.body.phone_number,
-        personnel_password: req.body.password,
-        personnel_fname: req.body.name,
-        personnel_email: req.body.email
-      })
-        .then(newPersonnel => {
-          let token = signToken(newPersonnel);
-          return res.status(201).json({ newPersonnel, token });
-        })
-        .catch(err => res.status(400).send({ err: err }));
-    }
-  },
-  login(req, res) {
-    Personnel.find({
-      where: {
-        phone_number: req.body.personnel_phone_number
-      }
-    }).then(personnel => {
-      if (!personnel) {
-        return res.status(401).json("Authentication failed.");
-      }
-      bcrypt.compare(
-        req.body.personnel_password,
-        personnel.personnel_password,
-        function(err, isMatch) {
-          if (isMatch && !err) {
-            var token = jwt.sign();
-          }
-        }
-      );
+  signup: async (req, res, next) => {
+    // find user specified by phone_number
+    let personnel = await Personnel.findOne({
+      where: { personnel_phone: req.body.phone_number }
     });
+
+    if (personnel) {
+      return res.status(403).json({ error: { number: "Number is in use" } });
+    }
+
+    Personnel.create({
+      personnel_phone: req.body.phone_number,
+      personnel_password: req.body.password,
+      personnel_fname: req.body.name,
+      personnel_email: req.body.email
+    })
+      .then(newPersonnel => {
+        let token = signToken(newPersonnel);
+        return res.status(201).json({ newPersonnel, token: `Bearer ${token}` });
+      })
+      .catch(err => res.status(400).send({ err: err }));
+  },
+  login: async (req, res) => {
+    // generate token
+    let token = signToken(req.user);
+    res.status(200).json({ token });
   }
 };
