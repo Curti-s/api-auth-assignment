@@ -8,7 +8,6 @@ var app = require("../app");
 var debug = require("debug")("backend:server");
 var http = require("http");
 
-const db = require("../models").personnel;
 /**
  * Get port from environment and store in Express.
  */
@@ -82,8 +81,7 @@ function onError(error) {
 function onListening() {
   var addr = server.address();
   var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
-  db.sequelize.sync().then(function() {
-    debug("Listening on " + bind);
-    console.log(`Server running on ${port} 🚀`);
-  });
+
+  debug("Listening on " + bind);
+  console.log(`Server running on ${port} 🚀`);
 }

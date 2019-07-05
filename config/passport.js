@@ -1,7 +1,7 @@
 const passport = require("passport");
 const passportJWT = require("passport-jwt");
 const JWT_SECRET = require("../config");
-const Personnel = require("../models").personnel;
+const Personnel = require("../models").personnels;
 
 // ExtractJwt for extracting token
 const ExtractJWT = passportJWT.ExtractJwt;
@@ -50,14 +50,13 @@ passport.use(
     async (phone_number, password, done) => {
       try {
         // find user specified by phone_number
-        let foundPersonnel = Personnel.findOne({
-          where: { personnel_phone: phone_number }
-        });
-
-        // if user is false, handle it
-        if (!foundPersonnel) {
-          return done(null, false);
-        }
+        await Personnel.findOne({ where: { personnel_phone: phone_number } })
+          .then(foundPersonnel => {
+            if (!foundPersonnel) {
+              return done(null, false);
+            }
+          })
+          .catch(err => console.log(err));
 
         // validate password
         const isMatch = await foundPersonnel.comparePassword(password);

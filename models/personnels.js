@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 
 module.exports = function(sequelize, DataTypes) {
   let Personnel = sequelize.define(
-    "personnel",
+    "personnels",
     {
       personnel_id: {
         type: DataTypes.INTEGER(11),
@@ -53,19 +53,22 @@ module.exports = function(sequelize, DataTypes) {
       }
     },
     {
-      tablename: "personnel",
+      tablename: "personnels",
       timestamps: false
     }
   );
 
-  Personnel.beforeCreate(async (personnel, options) => {
-    return (personnel.personnel_password = await bcrypt.hash(
-      personnel.personnel_password,
-      bcrypt.genSalt(10)
-    ));
+  Personnel.beforeCreate(function(personnel, options) {
+    new Promise((resolve, reject) => {
+      personnel.personnel_password = bcrypt.hash(
+        personnel.personnel_password,
+        bcrypt.genSalt(10)
+      );
+      return resolve(personnel, options);
+    });
   });
 
-  Personnel.prototype.comparePassword = async candidatePassword => {
+  Personnel.prototype.comparePassword = async function(candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.personnel_password);
   };
 
