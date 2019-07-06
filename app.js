@@ -7,7 +7,6 @@ const bodyParser = require("body-parser");
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const passport = require("passport");
-require("./config/passport");
 
 const app = express();
 
@@ -17,6 +16,7 @@ app.set("view engine", "ejs");
 
 // middleware
 app.use(passport.initialize());
+// require("./config/passport")(passport);
 
 // parse application/json
 app.use(bodyParser.json());

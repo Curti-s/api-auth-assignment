@@ -3,6 +3,7 @@ const router = express.Router();
 const passport = require("passport");
 const passportConf = require("../config/passport");
 const personnelController = require("../controllers").personnel;
+const taskController = require("../controllers").task;
 
 /* GET home page. */
 router.get("/", function(req, res, next) {
@@ -24,6 +25,11 @@ router.post(
     console.log(info);
   }),
   personnelController.login
+);
+router.get(
+  "/tasks/assigned",
+  passport.authenticate("jwt", { session: false }),
+  taskController.tasks
 );
 
 module.exports = router;
